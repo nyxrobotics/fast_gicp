@@ -51,6 +51,7 @@ public:
 
   void update_correspondences(const Eigen::Isometry3d& trans);
   double compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) const;
+  double getTransformationProbability();
 
 public:
   fast_gicp::NDTDistanceMode distance_mode;
@@ -65,6 +66,9 @@ public:
 
   Eigen::Isometry3f linearized_x;
   std::unique_ptr<Correspondences> correspondences;
+
+private:
+  double trans_probability_;
 };
 
 }  // namespace cuda

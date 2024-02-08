@@ -10,9 +10,8 @@
 namespace fast_gicp {
 namespace cuda {
 
-NDTCudaCore::NDTCudaCore() {
+NDTCudaCore::NDTCudaCore() : trans_probability_(0), resolution(1.0) {
   cudaDeviceSynchronize();
-  resolution = 1.0;
   linearized_x.setIdentity();
 
   offsets.reset(new thrust::device_vector<Eigen::Vector3i>(1));
@@ -159,21 +158,31 @@ void NDTCudaCore::update_correspondences(const Eigen::Isometry3d& trans) {
   }
 }
 
-double NDTCudaCore::compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) const {
+double NDTCudaCore::compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) const{
   thrust::host_vector<Eigen::Isometry3f, Eigen::aligned_allocator<Eigen::Isometry3f>> trans_(2);
   trans_[0] = linearized_x;
   trans_[1] = trans.cast<float>();
 
   thrust::device_vector<Eigen::Isometry3f> trans_ptr = trans_;
-
+  double derivatives = 0.0;
+  trans_probability_ = 0.0;
   switch (distance_mode) {
-    default:
     case fast_gicp::NDTDistanceMode::P2D:
-      return p2d_ndt_compute_derivatives(*target_voxelmap, *source_points, *correspondences, trans_ptr.data(), trans_ptr.data() + 1, H, b);
-
+      derivatives = p2d_ndt_compute_derivatives(*target_voxelmap, *source_points, *correspondences, trans_ptr.data(), trans_ptr.data() + 1, H, b);
+      trans_probability_ = derivatives / correspondences->size();
+      break;
     case fast_gicp::NDTDistanceMode::D2D:
-      return d2d_ndt_compute_derivatives(*target_voxelmap, *source_voxelmap, *correspondences, trans_ptr.data(), trans_ptr.data() + 1, H, b);
+      derivatives = d2d_ndt_compute_derivatives(*target_voxelmap, *source_voxelmap, *correspondences, trans_ptr.data(), trans_ptr.data() + 1, H, b);
+      trans_probability_ = derivatives / correspondences->size();
+      break;
+    default:
+      break;
   }
+  return derivatives;
+}
+
+double NDTCudaCore::getTransformationProbability() {
+  return trans_probability_;
 }
 
 }  // namespace cuda
