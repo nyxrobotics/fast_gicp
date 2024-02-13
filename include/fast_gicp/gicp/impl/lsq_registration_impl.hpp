@@ -53,6 +53,12 @@ template <typename PointTarget, typename PointSource>
 void LsqRegistration<PointTarget, PointSource>::computeTransformation(PointCloudSource& output, const Matrix4& guess) {
   Eigen::Isometry3d x0 = Eigen::Isometry3d(guess.template cast<double>());
 
+  if (x0.matrix().hasNaN()) {
+    std::cerr << "Error: wrong guess input" << std::endl;
+    output = *input_;
+    converged_ = false;
+    return;
+  }
   lm_lambda_ = -1.0;
   converged_ = false;
 
@@ -64,16 +70,21 @@ void LsqRegistration<PointTarget, PointSource>::computeTransformation(PointCloud
 
   for (int i = 0; i < max_iterations_ && !converged_; i++) {
     nr_iterations_ = i;
-
     Eigen::Isometry3d delta;
+    Eigen::Isometry3d x0_init = x0;
     if (!step_optimize(x0, delta)) {
-      std::cerr << "lm not converged!!" << std::endl;
+      if (lm_debug_print_) {
+        std::cerr << "lm not converged!!" << std::endl;
+      }
       break;
     }
-
+    if (x0.matrix().hasNaN()) {
+      std::cerr << "Error: next guess has nan -> skip" << std::endl;
+      x0 = x0_init;
+      break;
+    }
     converged_ = is_converged(delta);
   }
-
   final_transformation_ = x0.cast<float>().matrix();
   pcl::transformPointCloud(*input_, output, final_transformation_);
 }
