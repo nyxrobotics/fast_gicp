@@ -50,7 +50,7 @@ public:
   void create_source_voxelmap();
 
   void update_correspondences(const Eigen::Isometry3d& trans);
-  double compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) const;
+  double compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b);
   double getTransformationProbability();
 
 public:

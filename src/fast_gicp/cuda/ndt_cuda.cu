@@ -158,7 +158,7 @@ void NDTCudaCore::update_correspondences(const Eigen::Isometry3d& trans) {
   }
 }
 
-double NDTCudaCore::compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) const{
+double NDTCudaCore::compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b){
   thrust::host_vector<Eigen::Isometry3f, Eigen::aligned_allocator<Eigen::Isometry3f>> trans_(2);
   trans_[0] = linearized_x;
   trans_[1] = trans.cast<float>();
