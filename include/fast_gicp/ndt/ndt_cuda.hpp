@@ -53,6 +53,7 @@ public:
   void setDistanceMode(NDTDistanceMode mode);
   void setResolution(double resolution);
   void setNeighborSearchMethod(NeighborSearchMethod method, double radius = -1.0);
+  double getTransformationProbability();
 
   virtual void swapSourceAndTarget() override;
   virtual void clearSource() override;

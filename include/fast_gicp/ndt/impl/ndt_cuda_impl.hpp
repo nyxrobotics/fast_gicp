@@ -32,6 +32,11 @@ void NDTCuda<PointSource, PointTarget>::setNeighborSearchMethod(NeighborSearchMe
 }
 
 template <typename PointSource, typename PointTarget>
+double NDTCuda<PointSource, PointTarget>::getTransformationProbability() {
+  return ndt_cuda_->getTransformationProbability();
+}
+
+template <typename PointSource, typename PointTarget>
 void NDTCuda<PointSource, PointTarget>::swapSourceAndTarget() {
   ndt_cuda_->swap_source_and_target();
   input_.swap(target_);
